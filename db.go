@@ -65,7 +65,7 @@ func OpenTestConnection() (db *gorm.DB, err error) {
 		// sp_changedbowner 'gorm';
 		log.Println("testing sqlserver...")
 		if dbDSN == "" {
-			dbDSN = "sqlserver://gorm:LoremIpsum86@localhost:9930?database=gorm"
+			dbDSN = "sqlserver://gorm:LoremIpsum86@localhost:9930?database=gorm&encrypt=disable"
 		}
 		db, err = gorm.Open(sqlserver.Open(dbDSN), &gorm.Config{})
 	default:

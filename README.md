@@ -17,7 +17,10 @@ https://docs.docker.com/compose/install/
 ##### 4. Run tests with lastest GORM and all drivers
 
 ```bash
-# run tests (retry if failed due to preparing the testing database)
+# Start local databases, which the tests will attempt to connect to
+docker compose up
+
+# Run tests (retry if failed due to preparing the testing database)
 ./test.sh
 
 # Run tests with cached GORM and latest drivers
