@@ -18,7 +18,19 @@ import (
 
 var DB *gorm.DB
 
-func init() {
+func InitializeDB() {
+	if DB != nil {
+		sqlDb, err := DB.DB()
+		if err != nil {
+			panic(err)
+		}
+		err = sqlDb.Close()
+		if err != nil {
+			panic(err)
+		}
+		DB = nil
+	}
+
 	var err error
 	if DB, err = OpenTestConnection(); err != nil {
 		log.Printf("failed to connect database, got error %v\n", err)

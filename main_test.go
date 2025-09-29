@@ -1,11 +1,17 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	
 	"gorm.io/playground/models"
 )
 
@@ -16,6 +22,7 @@ import (
 func TestGORM(t *testing.T) {
 	user := models.User{Name: "jinzhu"}
 
+	InitializeDB()
 	DB.Create(&user)
 
 	var result models.User
@@ -25,6 +32,7 @@ func TestGORM(t *testing.T) {
 }
 
 // func TestGORMGen(t *testing.T) {
+//      InitializeDB()
 //      user := models.User{Name: "jinzhu2"}
 //      ctx := context.Background()
 
@@ -38,18 +46,35 @@ func TestGORM(t *testing.T) {
 // }
 
 func TestGORMCallbackLogging(t *testing.T) {
-	buffer := ""
+	InitializeDB()
+
+	var logBuffer bytes.Buffer
+	DB.Config.Logger = logger.New(
+		log.New(&logBuffer, "", log.LstdFlags),
+		logger.Config{
+			LogLevel: logger.Info,
+		},
+	)
+
+	callbackCalled := false
 	theCallback := func(tx *gorm.DB) {
-		buffer += "Hello world from theCallBack"
+		callbackCalled = true
 	}
 
 	err := DB.Callback().Create().Replace("gorm:create", theCallback)
 	assert.NoError(t, err)
 
-	user := models.User{Name: "gakoha"} // garyko
-	assert.EqualValues(t, "", buffer)
+	user := models.User{
+		Name: "gakoha",
+		Company: models.Company{
+			Name: "garyko",
+		},
+	}
+	assert.False(t, callbackCalled)
 	tx := DB.Create(&user)
 	assert.NotNil(t, tx)
 	assert.Nil(t, tx.Error)
-	assert.Contains(t, buffer, "Hello world from theCallBack")
+	assert.True(t, callbackCalled)
+
+	fmt.Fprintf(os.Stderr, "logBuffer-->%s<--logBuffer\n", logBuffer.String())
 }
