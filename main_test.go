@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -39,17 +38,18 @@ func TestGORM(t *testing.T) {
 // }
 
 func TestGORMCallbackLogging(t *testing.T) {
+	buffer := ""
 	theCallback := func(tx *gorm.DB) {
-		fmt.Println("Hello world from theCallBack")
+		buffer += "Hello world from theCallBack"
 	}
 
-	cb := DB.Callback().Create().Before("gorm:create")
-	assert.NotNil(t, cb)
-	err := cb.Replace("test:create", theCallback)
+	err := DB.Callback().Create().Replace("gorm:create", theCallback)
 	assert.NoError(t, err)
 
 	user := models.User{Name: "gakoha"} // garyko
+	assert.EqualValues(t, "", buffer)
 	tx := DB.Create(&user)
 	assert.NotNil(t, tx)
 	assert.Nil(t, tx.Error)
+	assert.Contains(t, buffer, "Hello world from theCallBack")
 }
